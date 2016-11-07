@@ -1,0 +1,18 @@
+{
+  "abe" : {
+    "username" : "abe",
+    "password" : "eba"
+  },
+  "haris" : {
+    "username" : "haris",
+    "password" : "sirah"
+  },
+  "moko" : {
+    "username" : "moko",
+    "password" : "omok"
+  },
+  "piko" : {
+    "username" : "piko",
+    "password" : "okip"
+  }
+}

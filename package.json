@@ -1,0 +1,16 @@
+{
+  "name": "brol",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Herpiko Dwi Aguno <herpiko@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.14.0",
+    "socket.io": "^1.5.1",
+    "socketio-auth": "^0.1.0"
+  }
+}
