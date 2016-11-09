@@ -15,7 +15,7 @@
       #privatemessages li { padding: 5px 10px; }
       #privatemessages li:nth-child(odd) { background: #eee; }
       #online { width: 30%; display: inline-block;background: grey;color: white;padding: 10px;vertical-align: top;float: right;list-style: none; padding:5px;cursor:pointer; }
-			.online:hover{background:red;color:white;}	
+			.online:hover{background:red;color:white;}
 			.room-title {background:lightgrey;color:black;padding:5px;cursor:pointer;}
 			.room-title-active {background:red !important;color:white !important;}
     </style>
@@ -24,9 +24,9 @@
   </head>
   <body>
     <h1>brol</h1>
-   	<span id="room-title-main" class="room-title room-title-active" onclick="switchRoom()">ruang</span> 
+   	<span id="room-title-main" class="room-title room-title-active" onclick="switchRoom()">ruang</span>
    	<span id="room-title-private" class="room-title" onclick="switchRoom()"></span>
-		<br> 
+		<br>
 		<ul id="messages"></ul>
     <ul id="privatemessages"></ul>
     <ul id="online"></ul>
@@ -45,7 +45,7 @@
       window.socket.emit('authentication', {username : window.credential.username, password : window.credential.password});
     }
     askCredential();
-		
+
 		window.switchRoom = function(room) {
 			if (room) {
 					$('#room-title-main').removeClass('room-title-active');
@@ -76,7 +76,7 @@
 
 		window.privateChat = function(username) {
 			if (window.credential.username == username) {
-				return;	
+				return;
 			}
 			window.switchRoom(username);
 		}
@@ -90,7 +90,7 @@
       $('#m').val('');
       return false;
     });
-    
+
     // Events
 
     window.socket.on('unauthorized', function(err) {
@@ -114,9 +114,7 @@
     window.socket.on('onlineUsers', function(online) {
       $('#online').html('');
       for (var i in online) {
-        if (online[i].socketId) {
-          $('#online').append($('<li class="online" onclick="privateChat(\'' + online[i].username + '\')">').text(online[i].username));
-        }
+        $('#online').append($('<li class="online" onclick="privateChat(\'' + online[i].username + '\')">').text(online[i].username));
       }
     })
   </script>
