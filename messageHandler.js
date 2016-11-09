@@ -13,7 +13,7 @@ MessageHandler.prototype.process = function(io, socket) {
     // Handle group message
     //}
   } else {
-    io.emit('message', msg);
+    io.emit('message', this.msg);
   }
 }
 

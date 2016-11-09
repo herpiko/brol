@@ -5,8 +5,8 @@ var io = require('socket.io')(http);
 var _ = require('underscore');
 var users = require('./users.json');
 var groups = require('./groups.json');
-var MessageHandler = require('./MessageHandler');
-var UserManager = require('./UserManager');
+var MessageHandler = require('./messageHandler');
+var UserManager = require('./userManager');
 
 var userManager = new UserManager(users);
 
