@@ -5,39 +5,48 @@
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; width: 60%; display: inline-block; border:1px solid red; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-      #privatemessages { list-style-type: none; margin: 0; padding: 0; width: 60%; display: none; border:1px solid red; }
-      #privatemessages li { padding: 5px 10px; }
-      #privatemessages li:nth-child(odd) { background: #eee; }
-      #online { width: 30%; display: inline-block;background: grey;color: white;padding: 10px;vertical-align: top;float: right;list-style: none; padding:5px;cursor:pointer; }
-			.online:hover{background:red;color:white;}	
-			.room-title {background:lightgrey;color:black;padding:5px;cursor:pointer;}
-			.room-title-active {background:red !important;color:white !important;}
+      #message-input { background: #000; padding: 3px; position: absolute; bottom: 0; width: 520px; }
+      #message-input input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      #message-input button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      .messages-container { list-style-type: none; margin: 0; padding: 0; width: 100%; display: inline-block; }
+      .messages-container li { padding: 5px 10px; }
+      .messages-container li:nth-child(odd) { background: #eee; }
+      #brol { width:800px; margin:0 auto; }
+      #sidebar { width:30%; height:80vh; background:; display:inline-block; background:grey; }
+      #online { background: grey;color: white;padding: 10px;vertical-align: top;list-style: none; padding:5px;cursor:pointer; }
+      .online:hover{background:lightgrey;color:black;}	
+      #room { background:lightgrey;width : 65%; display: inline-block; height:80vh; vertical-align:top; }
+			#room-title { color:black;padding:5px;cursor:pointer; font-size:16px; background:grey; color:white;}
     </style>
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
-    <div id="brol">
-      <h1>brol</h1>
-   	  <span id="room-title-main" class="room-title room-title-active" onclick="switchRoom()">ruang</span> 
-   	  <span id="room-title-private" class="room-title" onclick="switchRoom()"></span>
-		  <br> 
-      <ul id="messages">
-        <li v-for="m in messages.main">{{m.message}}</li>
-      </ul>
-      <ul id="privatemessages"></ul>
-      <ul id="online">
-        <li v-for="o in online">{{o.username}}</li>
-      </ul>
-      </li>
-      <div>
-        <input id="m" autocomplete="off" v-model="messageInput"/><button v-on:click="sendMessage()">Send</button>
+    <h1>brol</h1>
+    <div id="auth">
+      <div v-show="!authenticated">
+        <input type="text" v-model="credential.username"><br>
+        <input type="password" v-model="credential.password"><br>
+        <button v-on:click="login()">login</button>
+      </div>
+      <button v-show="authenticated" v-on:click="logout()">logout</button>
+    </div>
+    <br><br>
+    <div id="brol" v-show="authenticated">
+      <div id="sidebar">
+        <ul id="online">
+          <li class="online" v-on:click="switchRoom('main')">main</li>
+          <li v-for="o in online" class="online" v-show="o.username != credential.username" v-on:click="switchRoom(o.username)">{{o.username}}</li>
+        </ul>
+      </div>
+      <div id="room">
+        <span id="room-title">{{currentRoom}}</span> 
+		    <br> 
+        <ul v-for="room in rooms" class="messages-container" v-show="room.name==currentRoom">
+          <li v-for="m in room.messages">{{m.username}} : {{m.message}}</li>
+        </ul>
+        <div id="message-input" >
+          <input id="m" autocomplete="off" v-model="messageInput"/><button v-on:click="sendMessage()">Send</button>
+        </div>
       </div>
     </div>
     <script src="src.js"></script>
