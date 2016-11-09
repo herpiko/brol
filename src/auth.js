@@ -1,49 +1,7 @@
-var Vue = require('vue/dist/vue.js');
+'use strict';
 
-window.brol = new Vue({
-  el : '#brol',
-  data : {
-    currentRoom : 'main',
-    credential : {
-    },
-    socket : io(),
-    messageInput : '',
-    rooms : {
-      main : {
-        name : 'main',
-        messages : [],
-      },
-    },
-    online : [],
-    authenticated : false,
-  },
-  methods : {
-    // Main ethods
-    switchRoom : function(room) {
-      this.currentRoom = room;
-      if (!this.rooms[room]) {
-        this.$set(this.rooms, room, {
-          name : room,
-          messages : [],
-        })
-      }
-    },
-    sendMessage : function() {
-      if (!this.messageInput || (this.messageInput && this.messageInput.length < 1)) {
-        return;
-      }
-	    var msg = { username : this.credential.username , message : this.messageInput }
-	    if (this.currentRoom !== 'main') {
-	    	msg.recipient = this.currentRoom;
-	    }
-      console.log(msg);
-      window.socket.emit('message', msg);
-      this.messageInput = '';
-    },
-    privateChat : function(username) {
-    }
-  }
-})
+const Vue = require('vue/dist/vue.js');
+
 window.auth = new Vue({
   el  : '#auth',
   data : {
@@ -97,3 +55,5 @@ window.auth = new Vue({
     }
   }
 })
+
+module.exports = window.auth;
