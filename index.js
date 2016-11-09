@@ -1,8 +1,10 @@
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-
+var _ = require('underscore');
 var users = require('./users.json');
+var groups = require('./groups.json');
 
 function authenticate(socket, data, cb) {
   var authenticated = false;
@@ -20,15 +22,15 @@ require('socketio-auth')(io, {
   timeout : 1000,
 })
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
-});
+/* app.get('/', (req, res) => { */
+/*   res.sendFile(__dirname + '/index.html'); */
+/* }); */
+app.use(express.static('public'));
 
 io.on('connection', (socket) => {
   console.log('a user connected');
 
   var updateOnlineUser = function(){
-    var clients = Object.keys(io.sockets.clients().connected);
     io.emit('onlineUsers', users);
   }
 
@@ -54,10 +56,11 @@ io.on('connection', (socket) => {
       if (users[msg.recipient]) {
         io.to(users[msg.recipient].socketId).emit('message', msg);
         io.to(socket.client.id).emit('message', msg);
-      } 
-			// else if (groups[msg.recipient]) {
+      /* } else if (groups[msg.recipient]) { */
+      /*   for (var i in groups[msg.recipient]) { */
+      /*   } */
 			// Handle group message
-			//}
+			}
     } else {
       io.emit('message', msg);
     }
