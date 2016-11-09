@@ -14,4 +14,4 @@ RUN bash -l -c "nvm use v6"
 WORKDIR $DOCKYARD_SRVPROJ
 RUN bash -l -c "npm install -g node-gyp yarn"
 RUN bash -l -c "yarn"
-CMD bash -l -c "node index.js"
+CMD bash -l -c "npm run prod"
