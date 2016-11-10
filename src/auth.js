@@ -84,7 +84,7 @@ window.auth = new Vue({
           window.brol.online = online;
         })
         window.socket.on('contactedUpdate', function(contacted) {
-          window.brol.contacted = contacted;
+          window.brol.$set(window.brol, 'contacted', contacted);
         })
         window.socket.on('messages', function(data) {
             window.brol.rooms[data.room].messages = data.messages;
@@ -95,9 +95,9 @@ window.auth = new Vue({
 })
 
 try {
-  var credential = JSON.parse(window.localStorage.getItem('credential'));
-  if (credential && credential !== null && credential.username && credential.password) {
-    window.auth.credential = credential;
+  var prevCredential = JSON.parse(window.localStorage.getItem('credential'));
+  if (prevCredential && prevCredential !== null && prevCredential.username && prevCredential.username.length > 0 && prevCredential.password && prevCredential.password.length > 0) {
+    window.auth.credential = prevCredential;
     window.auth.login();
   }
 } catch(err) {

@@ -8,6 +8,8 @@ window.brol = new Vue({
     currentRoom : 'main',
     currentRoomDetail : {},
     credential : {
+      username : '',
+      password : '',
     },
     socket : io(),
     messageInput : '',
