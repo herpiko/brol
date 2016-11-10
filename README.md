@@ -1,8 +1,22 @@
 ### brol
 
+### Requirements
+
+- MongoDB
+
 #### Run
 
-`./deploy.sh` then open `http://localhost:3000`
+With docker, `./deploy.sh`
+
+or
+
+```
+$ yarn
+$ npm run init
+$ npm run dev
+```
+
+then open `http://localhost:3000`
 
 #### TODO
 
