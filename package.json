@@ -5,14 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prod": "browserify src/index.js | uglifyjs > public/src.js && node index.js",
-    "dev": "browserify src/index.js -o public/src.js && node index.js"
+    "init": "mongorestore -d brol dump/brol",
+    "prod": "cp src/index.html public && browserify src/index.js | uglifyjs > public/src.js && node index.js",
+    "dev": "cp src/index.html public && browserify src/index.js -o public/src.js && node index.js"
   },
   "author": "Herpiko Dwi Aguno <herpiko@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "aliasify": "^2.1.0",
     "express": "^4.14.0",
+    "mongoose": "^4.6.6",
     "socket.io": "^1.5.1",
     "socketio-auth": "^0.1.0",
     "underscore": "^1.8.3",
