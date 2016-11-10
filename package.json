@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "init": "mongorestore -d brol dump/brol",
-    "prod": "cp src/index.html public && browserify src/index.js | uglifyjs > public/src.js && node index.js",
-    "dev": "cp src/index.html public && browserify src/index.js -o public/src.js && node index.js"
+    "prod": "mkdir -p public && cp src/index.html public && browserify src/index.js | uglifyjs > public/src.js && node index.js",
+    "dev": "mkdir -p public && cp src/index.html public && browserify src/index.js -o public/src.js && node index.js"
   },
   "author": "Herpiko Dwi Aguno <herpiko@gmail.com>",
   "license": "MIT",
