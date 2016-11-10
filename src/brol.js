@@ -17,6 +17,7 @@ window.brol = new Vue({
       },
     },
     online : [],
+    contacted : [],
     authenticated : false,
   },
   methods : {

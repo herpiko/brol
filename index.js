@@ -1,1 +1,1 @@
-require('./api/server');
+require('./socket/server');
