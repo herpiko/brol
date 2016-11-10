@@ -3,21 +3,38 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var _ = require('underscore');
-var users = require('./users.json');
-var groups = require('./groups.json');
-var MessageHandler = require('./messageHandler');
-var UserManager = require('./userManager');
+var MessageHandler = require('./message');
+var UserManager = require('./users').UserManager;
 
-var userManager = new UserManager(users);
+var userManager = new UserManager();
+
+var updateOnlineUsers = function(){
+  userManager.getOnlineUsers()
+  .then((onlineUsers) => {
+    io.emit('onlineUsers', onlineUsers);
+  })
+  .catch((err) => {
+    console.log(err);
+  })
+}
+
 
 function authenticate(socket, data, cb) {
   var authenticated = false;
-  if (userManager.authUser(data.username, data.password)) {
+  userManager.authUser(data.username, data.password)
+  .then(() => {
+    console.log('a user connected');
     userManager.setSocketId(data.username, socket.client.id);
+    setTimeout(function(){
+      io.to(socket.client.id).emit('message', {username : 'bot', message : 'welcome'});
+      updateOnlineUsers();
+    }, 500);
+
     return cb(null, true);
-  } else {
+  })
+  .catch(() => {
     return cb(new Error('Invalid credential'));
-  }
+  })
 }
 
 require('socketio-auth')(io, {
@@ -28,28 +45,16 @@ require('socketio-auth')(io, {
 app.use(express.static('public'));
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
-
-  var updateOnlineUser = function(){
-    var onlineUsers = userManager.getOnlineUsers();
-    io.emit('onlineUsers', onlineUsers);
-  }
-
-  setTimeout(function(){
-    io.to(socket.client.id).emit('message', {username : 'Server', message : 'Selamat datang.'});
-    updateOnlineUser();
-  }, 500);
-
 
   // Events
   socket.on('disconnect', () => {
     console.log('user disconnected : ' + socket.client.id);
     userManager.removeSocketId(socket.client.id);
-    updateOnlineUser();
+    updateOnlineUsers();
   });
 
   socket.on('message', (msg) => {
-    new MessageHandler(msg, users).process(io, socket);
+    new MessageHandler(msg).process(io, socket);
   })
 })
 
