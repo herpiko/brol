@@ -12,6 +12,7 @@ var messageSchema = new Schema({
   recipientType : String,
   timestamp : Date,
   status : String,
+  type : String // private or group
 });
 
 var contactedListSchema = new Schema({
@@ -22,11 +23,21 @@ var contactedListSchema = new Schema({
   unread : Number
 });
 
+var groupSchema = new Schema({
+  name : String,
+  members : [],
+})
+const messageModel = db.model('Message', messageSchema);
+const contactedModel = db.model('Contacted', contactedListSchema);
+const groupModel = db.model('Group', groupSchema);
+const userModel = users.model;
+
 function MessageHandler(msg) {
   this.msg = msg;
-  this.model = db.model('Message', messageSchema);
-  this.contactedModel = db.model('Contacted', contactedListSchema);
-  this.userModel = users.model;
+  this.model = messageModel;
+  this.contactedModel = contactedModel;
+  this.groupModel = groupModel;
+  this.userModel = userModel;
 }
 
 MessageHandler.prototype.process = function(io, socket) {
@@ -34,25 +45,41 @@ MessageHandler.prototype.process = function(io, socket) {
     // TODO check wether if its online or not first
     let message = {
       message : this.msg.message,
-      sender : this.msg.username,
+      sender : this.msg.sender,
       recipient : this.msg.recipient,
+      type : this.msg.type,
       timestamp : new Date,
       status : 'arrived',
     }
     this.model.create(message, (err, result) => {
       // TOOD check err
-      this.userModel.findOne({username : this.msg.recipient}, (err, user) => {
-        // TODO check err
-        if (user) {
-          io.to(user.socketId).emit('message', this.msg);
-        }
-      })
-      io.to(socket.client.id).emit('message', this.msg);
+      if (message.type === 'group') {
+        this.groupModel.findOne({name : message.recipient}, (err, result) => {
+          // TODO check err
+          if (result) {
+            for (var i in result.members) {
+              this.userModel.findOne({username : result.members[i]}, (err, user) => {
+                // TODO check err
+                if (user) {
+                  io.to(user.socketId).emit('message', this.msg);
+                }
+              });
+            }
+          }
+        })
+      } else {
+        // Send message to both respondents
+        this.userModel.findOne({username : this.msg.recipient}, (err, user) => {
+          // TODO check err
+          if (user) {
+            io.to(user.socketId).emit('message', this.msg);
+          }
+        })
+        io.to(socket.client.id).emit('message', this.msg);
+      }
     })
     
-    var updateContacted = function(contacted) {
-    }
-    
+    // Update contacted list to both respondents
     const options = {
       upsert : true,
       new : true,
@@ -60,22 +87,27 @@ MessageHandler.prototype.process = function(io, socket) {
     }
     let contacted = {
       username : this.msg.recipient,
-      owner : this.msg.username,
+      owner : this.msg.sender,
       type : 'user',
       lastTimeStamp : new Date(),
     }
 
-    this.contactedModel.findOneAndUpdate({owner : contacted.owner }, contacted, options);
-    contacted.username = this.msg.username;
+    this.contactedModel.findOneAndUpdate({owner : contacted.owner }, contacted, options, (err, result) => {
+      // Do nothing
+    });
+    contacted.username = this.msg.sender;
     contacted.owner = this.msg.recipient;
-    this.contactedModel.findOneAndUpdate({owner : contacted.owner }, contacted, options);
-
-    // else if (groups[msg.recipient]) {
-    // Handle group message
-    //}
+    this.contactedModel.findOneAndUpdate({owner : contacted.owner }, contacted, options, (err, result) => {
+      // Do nothing
+    });
   } else {
     io.emit('message', this.msg);
   }
 }
 
-module.exports = MessageHandler;
+module.exports = {
+  MessageHandler : MessageHandler,
+  groupModel : groupModel,
+  contactedModel : contactedModel,
+  messageModel : messageModel,
+}

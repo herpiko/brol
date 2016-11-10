@@ -19,17 +19,13 @@ window.auth = new Vue({
       window.brol.credential = {};
       window.brol.authenticated = false;
       window.brol.rooms = { main : [] }
+      window.localStorage.clear('credential');
     },
     login : function(){
       window.credential = this.credential;
       window.brol.credential = credential;
       window.socket = io();
       window.socket.emit('authentication', {username : this.credential.username, password : this.credential.password});
-      window.socket.on('authenticated', function(){
-        console.log('authenticated');
-        window.brol.authenticated = true;
-        window.auth.authenticated = true;
-      })
       
       // Events
       window.socket.on('unauthorized', function(err) {
@@ -38,17 +34,27 @@ window.auth = new Vue({
       });
       
       window.socket.on('authenticated', function(){
+        console.log('authenticated');
+        window.brol.authenticated = true;
+        window.auth.authenticated = true;
         window.localStorage.setItem('credential', JSON.stringify(window.auth.credential));
+        
+        // Get the latest contacted list
+        window.socket.emit('contactedUpdate', window.auth.credential.username);
+
+        // The authenticated events begin here
         window.socket.on('message', function(msg) {
-          console.log(msg);
         	if (msg.recipient) {
             var room = msg.username;
     	      if (window.credential.username != msg.recipient) {
               room = msg.recipient;
             }
+            if (msg.type === 'group') {
+              room = msg.recipient;
+            }
     	      window.brol.switchRoom(room);
             // Update contacted list
-            if (_.filter(window.brol.contacted,function(contacted){return (contacted.id == msg.username)}).length < 1) {
+            if (_.filter(window.brol.contacted,function(contacted){return (contacted.username == msg.username)}).length < 1) {
               window.brol.contacted.push({
                 username : msg.username,
                 owner : msg.recipient,
@@ -58,7 +64,7 @@ window.auth = new Vue({
             } else {
               // TODO resorting
             }
-            if (_.filter(window.brol.contacted,function(contacted){return (contacted.id == msg.recipient)}).length < 1) {
+            if (_.filter(window.brol.contacted,function(contacted){return (contacted.username == msg.recipient)}).length < 1) {
               window.brol.contacted.push({
                 username : msg.recipient,
                 owner : msg.username,
@@ -78,8 +84,10 @@ window.auth = new Vue({
           window.brol.online = online;
         })
         window.socket.on('contactedUpdate', function(contacted) {
-          console.log('contacted update');
           window.brol.contacted = contacted;
+        })
+        window.socket.on('messages', function(data) {
+            window.brol.rooms[data.room].messages = data.messages;
         })
       })
     }
@@ -87,14 +95,12 @@ window.auth = new Vue({
 })
 
 try {
-  console.log('try to login');
   var credential = JSON.parse(window.localStorage.getItem('credential'));
   if (credential && credential !== null && credential.username && credential.password) {
     window.auth.credential = credential;
     window.auth.login();
   }
 } catch(err) {
-    console.log('try to login but nay');
     console.log(err);
 }
 

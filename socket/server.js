@@ -1,10 +1,17 @@
-var express = require('express');
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var _ = require('underscore');
-var MessageHandler = require('./message');
-var UserManager = require('./users').UserManager;
+'use strict';
+const express = require('express');
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const _ = require('underscore');
+const message = require('./message');
+const MessageHandler = message.MessageHandler;
+const contactedModel = message.contactedModel;
+const messageModel = message.messageModel;
+const groupModel = message.groupModel;
+const users = require('./users');
+const UserManager = users.UserManager;
+const userModel = users.model;
 
 var userManager = new UserManager();
 
@@ -18,7 +25,6 @@ var updateOnlineUsers = function(){
   })
 }
 
-
 function authenticate(socket, data, cb) {
   var authenticated = false;
   userManager.authUser(data.username, data.password)
@@ -26,7 +32,7 @@ function authenticate(socket, data, cb) {
     console.log('a user connected');
     userManager.setSocketId(data.username, socket.client.id);
     setTimeout(function(){
-      io.to(socket.client.id).emit('message', {username : 'bot', message : 'welcome'});
+      io.to(socket.client.id).emit('message', {sender : 'bot', message : 'welcome'});
       updateOnlineUsers();
     }, 500);
 
@@ -55,6 +61,58 @@ io.on('connection', (socket) => {
 
   socket.on('message', (msg) => {
     new MessageHandler(msg).process(io, socket);
+  });
+
+  socket.on('fetchMessages', (query) => {
+    // search the current username
+    userModel.findOne({socketId : socket.client.id}, (err, user) => {
+      // TODO check err
+      if (user && user.socketId) {
+        messageModel.find({ '$or' : [
+          {sender : query.room , recipient : user.username }, 
+          {sender : user.username, recipient : query.room},
+          // group
+          {sender : query.room, type : 'group' }, 
+        ]}, (err, messages) => {
+          // TODO check err
+          var data = {
+            room : query.room,
+            messages : messages
+          }
+          io.to(socket.client.id).emit('messages', data );
+        })
+      }
+    })
+  })
+
+  socket.on('contactedUpdate', (owner) => {
+    // TODO Strict query
+    contactedModel.find({owner : owner}, (err, contacted) => {
+      // TODO check err
+      groupModel.find({members : { $in : [owner] }}).lean().exec((err, groups) => {
+        // Is this realy needed?
+        if (groups && groups.length > 1) {
+          for (var i in contacted) {
+            if (contacted[i].type && contacted[i].type === 'group') {
+              for (var j in groups) {
+                if (contacted[i].username === groups[j].name) {
+                  groups[j].exists = true;   
+                }
+              }
+            }
+          }
+          for (var i in groups) {
+            if (!groups[i].exists) {
+              var group = groups[i];
+              group.username = group.name;
+              group.type = 'group';
+              contacted.push(group); 
+            }
+          }
+        }
+        io.to(socket.client.id).emit('contactedUpdate', contacted);
+      })
+    })
   })
 })
 
