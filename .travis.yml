@@ -1,0 +1,13 @@
+language: nodei_js
+node_js:
+  - "6"
+
+services:
+  - docker
+
+install:
+  - docker build -t brol .
+  - docker run -d -p 27017:27017 -p 3000:3000 --name brol brol
+
+script:
+  - docker ps | grep -q brol
