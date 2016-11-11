@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/.bin/mocha test/test.js",
     "init": "mongorestore -d brol dump/brol",
     "prod": "mkdir -p public && cp src/index.html public && browserify src/index.js | uglifyjs > public/src.js && node index.js",
     "dev": "mkdir -p public && cp src/index.html public && browserify src/index.js -o public/src.js && node index.js"
@@ -16,8 +16,13 @@
     "express": "^4.14.0",
     "mongoose": "^4.6.6",
     "socket.io": "^1.5.1",
+    "socket.io-client": "^1.5.1",
     "socketio-auth": "^0.1.0",
     "underscore": "^1.8.3",
     "vue": "^2.0.5"
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "mocha": "^3.1.2"
   }
 }
