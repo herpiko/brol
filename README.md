@@ -1,8 +1,11 @@
 ### brol
 
+[![Build Status](https://api.travis-ci.org/KodeKreatif/brol.svg)](https://travis-ci.org/KodeKreatif/brol)
+
 ### Requirements
 
 - MongoDB
+- Node v6.x
 
 ### Run
 
@@ -11,6 +14,7 @@ With docker, `./deploy.sh`
 or
 
 ```
+$ npm install -g yarn browserify uglifyjs
 $ yarn
 $ npm run init
 $ npm run dev
