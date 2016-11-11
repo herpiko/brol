@@ -20,6 +20,10 @@ $ npm run init
 $ npm run dev
 ```
 
+### Test
+
+`$ npm run test`
+
 then open `http://localhost:3000`
 
 ### Emitters
