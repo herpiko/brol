@@ -1,13 +1,16 @@
-language: nodei_js
+language: node_js
 node_js:
   - "6"
 
 services:
-  - docker
+  - mongodb
+
+before_install:
+  - npm install -g yarn browserify uglifyjs
 
 install:
-  - docker build -t brol .
-  - docker run -d -p 27017:27017 -p 3000:3000 --name brol brol
+  - yarn 
+  - npm run init 
 
 script:
-  - docker ps | grep -q brol
+  - npm run test
