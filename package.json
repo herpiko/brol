@@ -22,7 +22,7 @@
     "vue": "^2.0.5"
   },
   "devDependencies": {
-    "assert": "^1.4.1",
+    "should": "^11.1.1",
     "mocha": "^3.1.2"
   }
 }
