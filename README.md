@@ -30,8 +30,8 @@ then open `http://localhost:3000`
 
 #### Client
 
-- `authentication`, `({username : String, password : String})`
-- `message`, `({sender: String, recipient: String, message: String, type : String })`
+- `authentication`, `({username : String, password : String})` - login into the socket
+- `message`, `({sender: String, recipient: String, message: String, type : String })` - send message.
 - `fetchMessage`, `({room : String})`
 - `contactedUpdate`, `currentUsername`
 
@@ -43,7 +43,12 @@ then open `http://localhost:3000`
 
 #### Client
 
-- On progress...
+- `authenticated` - when authentication succeeded.
+- `unauthorized` - when authentication failed.
+- `message`, `({sender: String, recipient: String, message: String, type : String })` - when message arrived.
+- `contactedUpdate`, `[]` - updated contacted list from server.
+- `onlineUsers`, `[]` - server send online users list from server
+- `messages`, `{ rooms : String, messages : [] }` - messages list from server
 
 #### Server
 
