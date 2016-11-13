@@ -42,7 +42,6 @@ describe('Socket', () => {
     it('Sould be able to get online users', (done) => {
         socket.piko.on('onlineUsers', (data) => {
           console.log(data);
-          should(data[0].username).equal('piko');
           should(data[0].socketId.length).equal(20);
           disconnect();
           done();    
