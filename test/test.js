@@ -1,10 +1,6 @@
 'use strict';
 const mocha = require('mocha');
 
-/* mocha.setup({ */
-/*   timeout : 10000, */
-/*   slow : 5000, */
-/* }) */
 require('../index');
 
 var socket = {}
@@ -27,6 +23,9 @@ describe('Socket', () => {
     socket.piko = require('socket.io-client')('http://localhost:3000'); // piko
     socket.moko = require('socket.io-client')('http://localhost:3000'); // moko
     setTimeout(() => {
+      socket.abe.emit('authentication', {username: 'abe', password : 'eba'});
+      socket.piko.emit('authentication', {username: 'piko', password : 'okip'});
+      socket.moko.emit('authentication', {username: 'moko', password : 'okom'});
       done();
     }, 500);
   })
@@ -52,7 +51,10 @@ describe('Socket', () => {
     })
     it('Should be able to send message, from piko to abe', (done) => {
       socket.abe.on('message', (data) => {
-        console.log(data);
+        should(data.sender).equal('piko');
+        should(data.recipient).equal('abe');
+        should(data.message).equal('hi');
+        should(data.type).equal('private');
         disconnect();
         done();
       })
@@ -61,7 +63,10 @@ describe('Socket', () => {
     it('Should be able to send message, from abe to piko', (done) => {
       socket.abe.emit('message', {sender: 'abe', recipient: 'piko', message: 'eh', type: 'private'});
       socket.piko.on('message', (data) => {
-        console.log(data);
+        should(data.sender).equal('abe');
+        should(data.recipient).equal('piko');
+        should(data.message).equal('eh');
+        should(data.type).equal('private');
         disconnect();
         done();
       })
