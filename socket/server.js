@@ -3,7 +3,6 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const _ = require('underscore');
 const message = require('./message');
 const MessageHandler = message.MessageHandler;
 const contactedModel = message.contactedModel;
@@ -26,15 +25,18 @@ var updateOnlineUsers = function(){
 }
 
 function authenticate(socket, data, cb) {
-  var authenticated = false;
   userManager.authUser(data.username, data.password)
   .then(() => {
     console.log('a user connected');
-    userManager.setSocketId(data.username, socket.client.id);
-    setTimeout(function(){
-      io.to(socket.client.id).emit('message', {sender : 'bot', message : 'welcome'});
-      updateOnlineUsers();
-    }, 500);
+    userModel.findOne({username : data.username}, (user) => {
+      if (user) {
+        userManager.setSocketId(user._id, socket.client.id);
+        setTimeout(function(){
+          io.to(socket.client.id).emit('message', {sender : 'bot', message : 'welcome'});
+          updateOnlineUsers();
+        }, 500);
+      }
+    })
 
     return cb(null, true);
   })
@@ -101,9 +103,9 @@ io.on('connection', (socket) => {
               }
             }
           }
-          for (var i in groups) {
-            if (!groups[i].exists) {
-              var group = groups[i];
+          for (var k in groups) {
+            if (!groups[k].exists) {
+              var group = groups[k];
               group.username = group.name;
               group.type = 'group';
               contacted.push(group); 
