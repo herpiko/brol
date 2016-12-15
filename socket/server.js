@@ -25,20 +25,16 @@ var updateOnlineUsers = function(){
 }
 
 function authenticate(socket, data, cb) {
+  console.log(`${data.username} login`)
   userManager.authUser(data.username, data.password)
-  .then(() => {
+  .then((user) => {
     console.log('a user connected');
-    userModel.findOne({username : data.username}, (user) => {
-      if (user) {
-        userManager.setSocketId(user._id, socket.client.id);
-        setTimeout(function(){
-          io.to(socket.client.id).emit('message', {sender : 'bot', message : 'welcome'});
-          updateOnlineUsers();
-        }, 500);
-      }
-    })
-
-    return cb(null, true);
+    userManager.setSocketId(user._id, socket.client.id);
+    setTimeout(function(){
+      io.to(socket.client.id).emit('message', {sender : 'bot', message : 'welcome'});
+      updateOnlineUsers();
+    }, 500);
+    return cb(null, { id : user._id, username : user.username });
   })
   .catch(() => {
     return cb(new Error('Invalid credential'));
@@ -53,7 +49,6 @@ require('socketio-auth')(io, {
 app.use(express.static('public'));
 
 io.on('connection', (socket) => {
-
   // Events
   socket.on('disconnect', () => {
     console.log('user disconnected : ' + socket.client.id);
@@ -112,6 +107,8 @@ io.on('connection', (socket) => {
             }
           }
         }
+        console.log('contacted list : ');
+        console.log(contacted);
         io.to(socket.client.id).emit('contactedUpdate', contacted);
       })
     })

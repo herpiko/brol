@@ -26,7 +26,7 @@ UserManager.prototype.isUserOnline = function(user) {
 
 UserManager.prototype.getOnlineUsers = function() {
   return new Promise((resolve, reject) => {
-    this.model.find({ socketId : { $ne : null } }, {password:-1}, (err, result) => {
+    this.model.find({ socketId : { $ne : null } }, {username:1}, (err, result) => {
       if (err) {
         return reject(err);
       }
@@ -44,7 +44,7 @@ UserManager.prototype.authUser = function(username, password) {
       if (!result || (result && result.length < 1)) {
         return reject();
       }
-      resolve();
+      resolve(result[0]);
     })
   })
 }
