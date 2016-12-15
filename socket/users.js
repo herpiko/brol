@@ -2,8 +2,6 @@
 
 const db = require('./db');
 const Schema = db.Schema;
-const config = require('../config');
-const _ = require("underscore");
 
 var userSchema = new Schema({
   username : String,
@@ -28,16 +26,13 @@ UserManager.prototype.isUserOnline = function(user) {
 
 UserManager.prototype.getOnlineUsers = function() {
   return new Promise((resolve, reject) => {
-    this.model.find({ socketId : { $ne : null } }, (err, result) => {
+    this.model.find({ socketId : { $ne : null } }, {username:1}, (err, result) => {
       if (err) {
         return reject(err);
       }
       resolve(result);
     });
   })
-  /* return _.filter(this.users, function(user) { */
-  /*   return user.hasOwnProperty('socketId'); */
-  /* }); */
 }
 
 UserManager.prototype.authUser = function(username, password) {
@@ -49,14 +44,14 @@ UserManager.prototype.authUser = function(username, password) {
       if (!result || (result && result.length < 1)) {
         return reject();
       }
-      resolve();
+      resolve(result[0]);
     })
   })
 }
 
-UserManager.prototype.setSocketId = function(username, socketId) {
+UserManager.prototype.setSocketId = function(id, socketId) {
   return new Promise((resolve, reject) => {
-    this.model.findOneAndUpdate({ username : username }, { socketId : socketId }, (err, result) => {
+    this.model.findOneAndUpdate({ _id : id }, { socketId : socketId }, (err, result) => {
       if (err) {
         return reject();
       }

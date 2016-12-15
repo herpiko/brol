@@ -5,8 +5,9 @@ const _ = require('underscore');
 window.brol = new Vue({
   el : '#brol',
   data : {
-    currentRoom : 'main',
-    currentRoomDetail : {},
+    currentRoom : {
+      name : 'main',
+    },
     credential : {
       username : '',
       password : '',
@@ -24,24 +25,33 @@ window.brol = new Vue({
     authenticated : false,
   },
   methods : {
-    // Main ethods
+    // Main methods
     switchRoom : function(room) {
-      if (!this.rooms[room]) {
-        this.$set(this.rooms, room, {
-          name : room,
+      console.log('========================');
+      console.log(room)
+      if (!room.name && room.username) {
+        room.name = room.username;
+      }
+      if (!room.name) {
+        room.name = room._id;
+      }
+      if (!this.rooms[room._id]) {
+        this.$set(this.rooms, room._id, {
+          name : room.name,
+          id : room._id,
           messages : [],
         })
       }
-      this.currentRoom = room;
-      this.fetchMessages({room : room});
+      this.$set(this, 'currentRoom', { name : room.name, id : room._id})
+      this.fetchMessages({room : room._id});
       // check for group
       var currentContact = _.find(window.brol.contacted, function(contact){
-        return (contact && contact.username == room);
+        return (contact && contact.id == room._id);
       })
       if (currentContact) {
-        this.$set(this, 'currentRoomDetail', currentContact);
-      } else {
-        this.$set(this, 'currentRoomDetail', {});
+        this.$set(this, 'currentRoom', currentContact);
+      /* } else { */
+      /*   this.$set(this, 'currentRoom', {}); */
       }
     },
     sendMessage : function() {
@@ -49,18 +59,21 @@ window.brol = new Vue({
         return;
       }
 	    var msg = { 
-        sender : this.credential.username,
+        sender : this.credential.id,
         message : this.messageInput,
         type : 'private',
       }
-      if (this.rooms[this.currentRoom] && this.rooms[this.currentRoom].type && this.rooms[this.currentRoom].type === 'group') {
+      if (this.rooms[this.currentRoom.id] && this.rooms[this.currentRoom.id].type && this.rooms[this.currentRoom.id].type === 'group') {
         msg.type = 'group';
       }
-	    if (this.currentRoom !== 'main') {
-	    	msg.recipient = this.currentRoom;
+	    if (this.currentRoom.name !== 'main') {
+	    	msg.recipient = this.currentRoom.id;
 	    } else {
       
       }
+      console.log('Push the message to current room ' + window.brol.currentRoom.id);
+      window.brol.rooms[window.brol.currentRoom.id].messages.push(msg);
+      console.log(window.brol.rooms[window.brol.currentRoom.id].messages);
       window.socket.emit('message', msg);
       this.messageInput = '';
     },

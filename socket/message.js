@@ -2,7 +2,6 @@
 
 const db = require('./db');
 const Schema = db.Schema;
-const config = require('../config');
 const users = require('./users');
 
 var messageSchema = new Schema({
@@ -48,19 +47,19 @@ MessageHandler.prototype.process = function(io, socket) {
       sender : this.msg.sender,
       recipient : this.msg.recipient,
       type : this.msg.type,
-      timestamp : new Date,
+      timestamp : new Date(),
       status : 'arrived',
     }
     this.model.create(message, (err, result) => {
       // TOOD check err
       if (message.type === 'group') {
-        this.groupModel.findOne({name : message.recipient}, (err, result) => {
+        this.groupModel.findOne({_id : message.recipient}, (err, result) => {
           // TODO check err
           if (result) {
             for (var i in result.members) {
-              this.userModel.findOne({username : result.members[i]}, (err, user) => {
+              this.userModel.findOne({_id : result.members[i]}, (err, user) => {
                 // TODO check err
-                if (user) {
+                if (user && user.socketId) {
                   io.to(user.socketId).emit('message', this.msg);
                 }
               });
@@ -69,12 +68,14 @@ MessageHandler.prototype.process = function(io, socket) {
         })
       } else {
         // Send message to both respondents
-        this.userModel.findOne({username : this.msg.recipient}, (err, user) => {
+        this.userModel.findOne({_id : this.msg.recipient}, (err, user) => {
           // TODO check err
-          if (user) {
+          if (user && user.socketId) {
             io.to(user.socketId).emit('message', this.msg);
           }
         })
+        // Send to self
+        delete(this.msg.messsage);
         io.to(socket.client.id).emit('message', this.msg);
       }
     })
@@ -86,16 +87,16 @@ MessageHandler.prototype.process = function(io, socket) {
       setDefaultsOnInsert : true,
     }
     let contacted = {
-      username : this.msg.recipient,
+      id : this.msg.recipient,
       owner : this.msg.sender,
       type : 'user',
       lastTimeStamp : new Date(),
     }
 
-    this.contactedModel.findOneAndUpdate({owner : contacted.owner }, contacted, options, (err, result) => {
+    this.contactedModel.findOneAndUpdate({id : contacted.owner }, contacted, options, (err, result) => {
       // Do nothing
     });
-    contacted.username = this.msg.sender;
+    contacted.id = this.msg.sender;
     contacted.owner = this.msg.recipient;
     this.contactedModel.findOneAndUpdate({owner : contacted.owner }, contacted, options, (err, result) => {
       // Do nothing

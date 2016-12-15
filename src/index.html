@@ -41,9 +41,9 @@
         <ul id="online">
           <li class="online" v-on:click="switchRoom('main')">main</li>
           <li v-for="c in contacted" class="online"
-            v-bind:class="{ 'online-active' : (c.username && c.username==currentRoom) }" 
+            v-bind:class="{ 'online-active' : (c.username && c.username==currentRoom.name) }" 
             v-show="credential && credential.username && c.username != credential.username" 
-            v-on:click="switchRoom(c.username)"
+            v-on:click="switchRoom(c)"
           >
             {{c.username}}
           </li>
@@ -52,23 +52,23 @@
         <ul id="online">
           <li v-for="o in online" class="online" 
             v-show="credential && credential.username && o.username != credential.username" 
-            v-on:click="switchRoom(o.username)"
+            v-on:click="switchRoom(o)"
           >
             {{o.username}}
           </li>
         </ul>
       </div>
       <div id="room">
-        <span id="room-title">{{currentRoom}}</span> 
-        <span v-show="currentRoomDetail.type=='group'">
-          <span v-for="m in currentRoomDetail.members">{{m}}, </span>
+        <span id="room-title">{{currentRoom.name}}</span> 
+        <span v-show="currentRoom.type=='group'">
+          <span v-for="m in currentRoom.members">{{m}}, </span>
         </span> 
 		    <br> 
-        <ul v-for="room in rooms" class="messages-container" v-show="room.name==currentRoom">
+        <ul v-for="room in rooms" class="messages-container" v-show="room.name==currentRoom.name">
           <li v-for="m in room.messages">{{m.sender}} : {{m.message}}</li>
         </ul>
         <div id="message-input" >
-          <input id="m" autocomplete="off" v-model="messageInput"/><button v-on:click="sendMessage()">Send</button>
+          <input id="m" autocomplete="off" v-model="messageInput" v-on:keyup.enter="sendMessage()" /><button v-on:click="sendMessage()">Send</button>
         </div>
       </div>
     </div>

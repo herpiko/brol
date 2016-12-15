@@ -3,7 +3,6 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const _ = require('underscore');
 const message = require('./message');
 const MessageHandler = message.MessageHandler;
 const contactedModel = message.contactedModel;
@@ -26,17 +25,16 @@ var updateOnlineUsers = function(){
 }
 
 function authenticate(socket, data, cb) {
-  var authenticated = false;
+  console.log(`${data.username} login`)
   userManager.authUser(data.username, data.password)
-  .then(() => {
+  .then((user) => {
     console.log('a user connected');
-    userManager.setSocketId(data.username, socket.client.id);
+    userManager.setSocketId(user._id, socket.client.id);
     setTimeout(function(){
       io.to(socket.client.id).emit('message', {sender : 'bot', message : 'welcome'});
       updateOnlineUsers();
     }, 500);
-
-    return cb(null, true);
+    return cb(null, { id : user._id, username : user.username });
   })
   .catch(() => {
     return cb(new Error('Invalid credential'));
@@ -51,7 +49,6 @@ require('socketio-auth')(io, {
 app.use(express.static('public'));
 
 io.on('connection', (socket) => {
-
   // Events
   socket.on('disconnect', () => {
     console.log('user disconnected : ' + socket.client.id);
@@ -101,15 +98,17 @@ io.on('connection', (socket) => {
               }
             }
           }
-          for (var i in groups) {
-            if (!groups[i].exists) {
-              var group = groups[i];
+          for (var k in groups) {
+            if (!groups[k].exists) {
+              var group = groups[k];
               group.username = group.name;
               group.type = 'group';
               contacted.push(group); 
             }
           }
         }
+        console.log('contacted list : ');
+        console.log(contacted);
         io.to(socket.client.id).emit('contactedUpdate', contacted);
       })
     })

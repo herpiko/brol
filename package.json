@@ -6,8 +6,7 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha test/test.js",
     "init": "mongorestore -d brol dump/brol",
-    "prod": "mkdir -p public && cp src/index.html public && browserify src/index.js | uglifyjs > public/src.js && node index.js",
-    "dev": "mkdir -p public && cp src/index.html public && browserify src/index.js -o public/src.js && node index.js"
+    "start": "node index.js"
   },
   "author": "Herpiko Dwi Aguno <herpiko@gmail.com>",
   "license": "MIT",
@@ -22,7 +21,7 @@
     "vue": "^2.0.5"
   },
   "devDependencies": {
-    "assert": "^1.4.1",
+    "should": "^11.1.1",
     "mocha": "^3.1.2"
   }
 }
