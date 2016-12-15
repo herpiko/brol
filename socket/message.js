@@ -75,6 +75,7 @@ MessageHandler.prototype.process = function(io, socket) {
           }
         })
         // Send to self
+        delete(this.msg.messsage);
         io.to(socket.client.id).emit('message', this.msg);
       }
     })
