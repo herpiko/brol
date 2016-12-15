@@ -13,4 +13,4 @@ RUN bash -l -c "npm install -g node-gyp yarn"
 COPY $DOCKYARD_SRC $DOCKYARD_SRVPROJ
 WORKDIR $DOCKYARD_SRVPROJ
 RUN bash -l -c "yarn"
-CMD bash -l -c "npm run prod"
+CMD bash -l -c "npm run start"
