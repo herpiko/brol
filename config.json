@@ -1,3 +1,4 @@
 {
-  "db": "mongodb://localhost/brol"
+  "db": "mongodb://localhost/brol",
+  "storeMessage" : true
 }
