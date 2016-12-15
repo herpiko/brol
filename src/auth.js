@@ -33,26 +33,30 @@ window.auth = new Vue({
         window.localStorage.clear('credential');
       });
       
-      window.socket.on('authenticated', function(){
+      window.socket.on('authenticated', function(result){
         console.log('authenticated');
+        console.log(result);
         window.brol.authenticated = true;
         window.auth.authenticated = true;
+        window.auth.credential.id = result.id;
         window.localStorage.setItem('credential', JSON.stringify(window.auth.credential));
         
         // Get the latest contacted list
-        window.socket.emit('contactedUpdate', window.auth.credential.username);
+        window.socket.emit('contactedUpdate', window.auth.credential.id);
 
         // The authenticated events begin here
         window.socket.on('message', function(msg) {
+          console.log('ON : message');
+          console.log(msg);
         	if (msg.recipient) {
-            var room = msg.username;
-    	      if (window.credential.username != msg.recipient) {
+            var room = msg.sender;
+    	      if (window.credential.sender != msg.recipient) {
               room = msg.recipient;
             }
             if (msg.type === 'group') {
               room = msg.recipient;
             }
-    	      window.brol.switchRoom(room);
+    	      window.brol.switchRoom({_id : room});
             // Update contacted list
             if (_.filter(window.brol.contacted,function(contacted){return (contacted.username == msg.username)}).length < 1) {
               window.brol.contacted.push({
@@ -74,7 +78,12 @@ window.auth = new Vue({
             } else {
               // TODO resorting
             }
-            return window.brol.rooms[room].messages.push(msg);
+            if (msg.message) {
+              return window.brol.rooms[room].messages.push(msg);
+            } else {
+              message = window.brol.rooms[room].messages.find(function(o) { return o.timestamp == msg.timestamp });
+              message.status = msg.status;
+            }
         	}
           window.brol.rooms.main.messages.push(msg);
 
@@ -87,7 +96,13 @@ window.auth = new Vue({
           window.brol.$set(window.brol, 'contacted', contacted);
         })
         window.socket.on('messages', function(data) {
-            window.brol.rooms[data.room].messages = data.messages;
+            console.log('----------------------');
+            console.log(data);
+            console.log(window.brol.rooms);
+            /* window.brol.rooms[data.room].messages = data.messages; */
+            if (data.room) {
+              window.brol.$set(window.brol.rooms, data.room, { messages : data.messages});
+            }
         })
       })
     }
