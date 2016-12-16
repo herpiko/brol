@@ -14,6 +14,7 @@
     "aliasify": "^2.1.0",
     "express": "^4.14.0",
     "mongoose": "^4.6.6",
+    "redis-connection": "^5.0.0",
     "socket.io": "^1.5.1",
     "socket.io-client": "^1.5.1",
     "socketio-auth": "^0.1.0",
