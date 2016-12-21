@@ -10,7 +10,6 @@ before_install:
 
 install:
   - yarn 
-  - npm run init 
 
 script:
-  - npm run test
+  - npm run init 
