@@ -2,15 +2,22 @@
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
-const io = require('socket.io')(http);
 const message = require('./message');
 const MessageHandler = message.MessageHandler;
 const contactedModel = message.contactedModel;
 const messageModel = message.messageModel;
 const groupModel = message.groupModel;
+const pub = message.pub;
+const sub = message.sub;
 const users = require('./users');
 const UserManager = users.UserManager;
 const userModel = users.model;
+const io = require('socket.io')(http);
+const router = require('socket.io-events')();
+users.router(router);
+io.use(router)
+
+// Assign router to user module
 
 var userManager = new UserManager();
 
@@ -52,6 +59,12 @@ io.on('connection', (socket) => {
   // Events
   socket.on('disconnect', () => {
     console.log('user disconnected : ' + socket.client.id);
+    pub.hget(socket.client.id, function(err, result){
+      pub.del(socket.client.id);
+      if (result) {
+        pub.del(result);
+      }
+    });
     userManager.removeSocketId(socket.client.id);
     updateOnlineUsers();
   });
@@ -116,5 +129,12 @@ io.on('connection', (socket) => {
 })
 
 http.listen(3000, () => {
+  pub.on('ready', () =>  {
+    console.log('PUB ready');
+    sub.on('ready', () => {
+      console.log('SUB ready');
+      sub.subscribe('chat:messages:latest');
+    })
+  })
   console.log('listening on port 3000');
 });
