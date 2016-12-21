@@ -6,6 +6,7 @@
 
 - MongoDB
 - Node v6.x
+- Redis
 
 ### Run
 
@@ -20,11 +21,11 @@ $ npm run init
 $ npm run dev
 ```
 
+then open `http://localhost:3000`
+
 ### Test
 
 `$ npm run test`
-
-then open `http://localhost:3000`
 
 ### Emitters
 
