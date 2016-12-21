@@ -1,6 +1,6 @@
 {
-  "db": "mongodb://localhost/brol",
   "storeMessage" : true,
+  "mongodb" : "mongodb://localhost/brol",
   "mailer" : {
     "username" : "_EMAIL_",
     "password" : "_EMAIL_PASSWORD_"
