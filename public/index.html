@@ -1,1 +1,8 @@
 brol
+<script src=/socket.io/socket.io.js></script>
+<script>
+var username = prompt('Username : ');
+var password = prompt('Password : ');
+window.socket = io();
+socket.emit('authentication', {username : username, password : password});
+</script>
