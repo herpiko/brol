@@ -3,6 +3,8 @@
 const db = require('./db');
 const Schema = db.Schema;
 const users = require('./users');
+const pub = require('redis-connection')();
+const sub = require('redis-connection')('subcriber');
 
 var messageSchema = new Schema({
   message : String,
@@ -60,6 +62,10 @@ MessageHandler.prototype.process = function(io, socket) {
               this.userModel.findOne({_id : result.members[i]}, (err, user) => {
                 // TODO check err
                 if (user && user.socketId) {
+                  
+                  this.msg.destSocketId = user.socketId;
+                  pub.rpush('chat:messages', JSON.stringify(this.msg));
+                  pub.publish('chat:messages:latest', JSON.stringify(this.msg));
                   io.to(user.socketId).emit('message', this.msg);
                 }
               });
@@ -71,11 +77,17 @@ MessageHandler.prototype.process = function(io, socket) {
         this.userModel.findOne({_id : this.msg.recipient}, (err, user) => {
           // TODO check err
           if (user && user.socketId) {
+            this.msg.destSocketId = user.socketId;
+            pub.rpush('chat:messages', JSON.stringify(this.msg));
+            pub.publish('chat:messages:latest', JSON.stringify(this.msg));
             io.to(user.socketId).emit('message', this.msg);
           }
         })
         // Send to self
         delete(this.msg.messsage);
+        this.msg.destSocketId = socket.client.id;
+        pub.rpush('chat:messages', JSON.stringify(this.msg));
+        pub.publish('chat:messages:latest', JSON.stringify(this.msg));
         io.to(socket.client.id).emit('message', this.msg);
       }
     })
@@ -106,9 +118,16 @@ MessageHandler.prototype.process = function(io, socket) {
   }
 }
 
+sub.on('message', function(channel, message){
+  console.log(channel);
+  console.log(message);
+})
+
 module.exports = {
   MessageHandler : MessageHandler,
   groupModel : groupModel,
   contactedModel : contactedModel,
   messageModel : messageModel,
+  pub : pub,
+  sub : sub,
 }
