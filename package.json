@@ -1,12 +1,13 @@
 {
   "name": "brol",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha test/test.js",
     "init": "mongorestore -d brol dump/brol",
-    "start": "node index.js"
+    "prod": "mkdir -p public && cp src/index.html public && browserify src/index.js | uglifyjs > public/src.js && node index.js",
+    "dev": "mkdir -p public && cp src/index.html public && browserify src/index.js -o public/src.js && node index.js"
   },
   "author": "Herpiko Dwi Aguno <herpiko@gmail.com>",
   "license": "MIT",
@@ -14,11 +15,8 @@
     "aliasify": "^2.1.0",
     "express": "^4.14.0",
     "mongoose": "^4.6.6",
-    "nodemailer": "^2.7.0",
-    "redis-connection": "^5.0.0",
     "socket.io": "^1.5.1",
     "socket.io-client": "^1.5.1",
-    "socket.io-events": "^0.4.6",
     "socketio-auth": "^0.1.0",
     "underscore": "^1.8.3",
     "vue": "^2.0.5"
