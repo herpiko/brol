@@ -9,6 +9,8 @@ const messageModel = message.messageModel;
 const groupModel = message.groupModel;
 const pub = message.pub;
 const sub = message.sub;
+const zpub = message.zpub;
+const zsub = message.zsub;
 const users = require('./users');
 const UserManager = users.UserManager;
 const userModel = users.model;
@@ -133,7 +135,7 @@ http.listen(3000, () => {
     console.log('PUB ready');
     sub.on('ready', () => {
       console.log('SUB ready');
-      sub.subscribe('chat:messages:latest');
+      zsub.subscribe('chat:messages:latest');
     })
   })
   console.log('listening on port 3000');

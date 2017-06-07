@@ -5,6 +5,17 @@ const Schema = db.Schema;
 const users = require('./users');
 const pub = require('redis-connection')();
 const sub = require('redis-connection')('subcriber');
+var zmq = require('zmq');
+var zpub = zmq.socket('pub');
+var zsub = zmq.socket('sub');
+
+zpub.bindSync('tcp://127.0.0.1:3001');
+zsub.connect('tcp://127.0.0.1:3001');
+
+//setInterval(function(){
+//  console.log('sending multipart message envelope');
+//  sock.send(['kambing', 'bebek']);
+//}, 500);
 
 var messageSchema = new Schema({
   message : String,
@@ -64,8 +75,10 @@ MessageHandler.prototype.process = function(io, socket) {
                 if (user && user.socketId) {
                   
                   this.msg.destSocketId = user.socketId;
-                  pub.rpush('chat:messages', JSON.stringify(this.msg));
-                  pub.publish('chat:messages:latest', JSON.stringify(this.msg));
+                 // pub.rpush('chat:messages', JSON.stringify(this.msg));
+                  //pub.publish('chat:messages:latest', JSON.stringify(this.msg));
+                  zpub.send(['chat:messages:latest', JSON.stringify(this.msg)]);
+                  zpub.send(['chat:messages', JSON.stringify(this.msg)]);
                   io.to(user.socketId).emit('message', this.msg);
                 }
               });
@@ -78,16 +91,20 @@ MessageHandler.prototype.process = function(io, socket) {
           // TODO check err
           if (user && user.socketId) {
             this.msg.destSocketId = user.socketId;
-            pub.rpush('chat:messages', JSON.stringify(this.msg));
-            pub.publish('chat:messages:latest', JSON.stringify(this.msg));
+            //pub.rpush('chat:messages', JSON.stringify(this.msg));
+            //pub.publish('chat:messages:latest', JSON.stringify(this.msg));
+            zpub.send('chat:messages:latest', JSON.stringify(this.msg));
+            zpub.send('chat:messages', JSON.stringify(this.msg));
             io.to(user.socketId).emit('message', this.msg);
           }
         })
         // Send to self
         delete(this.msg.messsage);
         this.msg.destSocketId = socket.client.id;
-        pub.rpush('chat:messages', JSON.stringify(this.msg));
-        pub.publish('chat:messages:latest', JSON.stringify(this.msg));
+        //pub.rpush('chat:messages', JSON.stringify(this.msg));
+        //pub.publish('chat:messages:latest', JSON.stringify(this.msg));
+        zpub.send('chat:messages:latest', JSON.stringify(this.msg));
+        zpub.send('chat:messages', JSON.stringify(this.msg));
         io.to(socket.client.id).emit('message', this.msg);
       }
     })
@@ -130,4 +147,6 @@ module.exports = {
   messageModel : messageModel,
   pub : pub,
   sub : sub,
+  zpub : zpub,
+  zsub : zsub,
 }
